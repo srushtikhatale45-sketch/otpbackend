@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://otpfrontend-sigma.vercel.app/'
+  'https://otpfrontend-sigma.vercel.app',' https://otpbackend-p2gr.onrender.com'
 ];
 
 app.use(cors({
