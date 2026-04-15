@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const OTP = require('../models/OTP');
 const User = require('../models/User');
-const { sendOTPviaWhatsApp } = require('../services/whatsappService'); // Fixed: lowercase 'w'
+const { sendOTPviaWhatsApp } = require('../services/WhatsappService'); // Fixed: lowercase 'w'
 const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
