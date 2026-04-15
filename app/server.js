@@ -4,89 +4,71 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 
-// Load environment variables from the correct location
-dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const { connectDB } = require('./config/database');
-const { syncDatabase } = require('./models');
-const otpRoutes = require('./routes/otpRoutes');
+const smsRoutes = require('./routes/smsRoutes');
+const whatsappRoutes = require('./routes/whatsappRoutes');
 const authRoutes = require('./routes/authRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-
-
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'https://otpfrontend-sigma.vercel.app'
-];
+const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'https://your-frontend-url.vercel.app'];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow Postman
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error('Not allowed by CORS'));
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Routes
-app.use('/api/otp', otpRoutes);
+// Separate routes for SMS and WhatsApp
+app.use('/api/sms', smsRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/auth', authRoutes);
 
-// Health check
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
-  });
+  res.status(200).json({ status: 'OK', message: 'Server is running', timestamp: new Date().toISOString() });
 });
 
-// 404 handler
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found`
-  });
+  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
 });
 
-// Error handling middleware
 app.use(errorHandler);
 
 const startServer = async () => {
   try {
     await connectDB();
-    await syncDatabase();
-    
     app.listen(PORT, () => {
       console.log(`\n🚀 Server running on port ${PORT}`);
-      console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 API URL: http://localhost:${PORT}`);
       console.log(`✅ Health check: http://localhost:${PORT}/health`);
       console.log(`\n📝 Available Routes:`);
-      console.log(`   POST   /api/otp/send-otp`);
-      console.log(`   POST   /api/otp/verify-otp`);
-      console.log(`   POST   /api/otp/resend-otp`);
-      console.log(`   POST   /api/auth/login`);
-      console.log(`   POST   /api/auth/refresh-token`);
-      console.log(`   POST   /api/auth/logout`);
-      console.log(`   GET    /api/auth/me`);
-      console.log(`   GET    /api/auth/check\n`);
+      console.log(`   SMS Routes:`);
+      console.log(`     POST   /api/sms/send-otp`);
+      console.log(`     POST   /api/sms/verify-otp`);
+      console.log(`     POST   /api/sms/resend-otp`);
+      console.log(`   WhatsApp Routes:`);
+      console.log(`     POST   /api/whatsapp/send-otp`);
+      console.log(`     POST   /api/whatsapp/verify-otp`);
+      console.log(`     POST   /api/whatsapp/resend-otp`);
+      console.log(`   Auth Routes:`);
+      console.log(`     POST   /api/auth/refresh-token`);
+      console.log(`     POST   /api/auth/logout`);
+      console.log(`     GET    /api/auth/check\n`);
     });
   } catch (error) {
-    console.error('Failed to start server try again :', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };

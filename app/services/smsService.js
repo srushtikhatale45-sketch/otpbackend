@@ -7,7 +7,7 @@ dotenv.config();
  * Send OTP via SMS using smsjust.com API
  * @param {string} phoneNumber - Recipient phone number
  * @param {string} otpCode - 6-digit OTP code
- * @returns {Promise<boolean>} - Success status
+ * @returns {Promise<boolean>} - Success satatus
  */
 const sendOTPviaSMS = async (phoneNumber, otpCode) => {
   try {

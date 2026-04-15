@@ -17,6 +17,11 @@ const OTP = sequelize.define('OTP', {
     allowNull: false,
     field: 'otp_code'
   },
+  channel: {
+    type: DataTypes.ENUM('sms', 'whatsapp'),
+    defaultValue: 'sms',
+    field: 'channel'
+  },
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
@@ -38,8 +43,7 @@ const OTP = sequelize.define('OTP', {
   }
 }, {
   tableName: 'otp_verifications',
-  timestamps: false,
-  underscored: true
+  timestamps: false
 });
 
 module.exports = OTP;

@@ -9,10 +9,11 @@ const generateAccessToken = (user) => {
       id: user.id, 
       mobileNumber: user.mobileNumber,
       name: user.name,
-      isVerified: user.isVerified 
+      isVerified: user.isVerified,
+      channel: user.preferredChannel || 'sms'
     },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY || '15m' }
+    { expiresIn: '15m' }
   );
 };
 
@@ -20,7 +21,7 @@ const generateRefreshToken = (user) => {
   return jwt.sign(
     { id: user.id, mobileNumber: user.mobileNumber },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY || '7d' }
+    { expiresIn: '7d' }
   );
 };
 

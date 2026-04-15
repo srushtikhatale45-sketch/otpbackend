@@ -10,7 +10,8 @@ const User = sequelize.define('User', {
   },
   name: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: false,
+    defaultValue: 'User'
   },
   mobileNumber: {
     type: DataTypes.STRING,
@@ -22,6 +23,11 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
     field: 'is_verified'
+  },
+  preferredChannel: {
+    type: DataTypes.ENUM('sms', 'whatsapp'),
+    defaultValue: 'sms',
+    field: 'preferred_channel'
   },
   refreshToken: {
     type: DataTypes.TEXT,
@@ -36,19 +42,15 @@ const User = sequelize.define('User', {
 }, {
   tableName: 'users',
   timestamps: true,
-  underscored: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  underscored: true
 });
 
-// Hash refresh token before saving
 User.prototype.hashRefreshToken = async function(token) {
   const salt = await bcrypt.genSalt(10);
   this.refreshToken = await bcrypt.hash(token, salt);
   await this.save();
 };
 
-// Verify refresh token
 User.prototype.verifyRefreshToken = async function(token) {
   if (!this.refreshToken) return false;
   return await bcrypt.compare(token, this.refreshToken);
