@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const OTP = require('../models/OTP');
 const User = require('../models/User');
-const { sendOTPviaWhatsApp } = require('../services/WhatsappService'); // Fixed: lowercase 'w'
+const { sendOTPviaWhatsApp } = require('../services/whatsappService'); 
 const { generateAccessToken, generateRefreshToken } = require('../config/jwt');
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -39,7 +39,6 @@ const sendWhatsAppOTP = async (req, res) => {
     // Send OTP via WhatsApp
     const result = await sendOTPviaWhatsApp(cleanPhoneNumber, otpCode);
     
-    // Return success without OTP in response
     res.status(200).json({ 
       success: true, 
       message: 'WhatsApp OTP sent successfully',
