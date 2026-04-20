@@ -71,7 +71,7 @@ const startServer = async () => {
     await connectDB();
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`\n🚀 Server running on port ${PORT}`);
-      console.log(`✅ Health check: http://localhost:${PORT}/health`);
+      console.log(`✅ Health check here: http://localhost:${PORT}/health`);
       console.log(`\n📝 Available Routes:`);
       console.log(`   POST   /api/sms/send-otp`);
       console.log(`   POST   /api/sms/verify-otp`);
