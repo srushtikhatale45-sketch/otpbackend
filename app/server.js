@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const path = require('path');
@@ -7,6 +6,7 @@ const path = require('path');
 dotenv.config({ path: path.join(__dirname, '.env') });
 
 const { connectDB } = require('./config/database');
+const { corsMiddleware, manualCorsHeaders } = require('./middleware/corsMiddleware');
 const smsRoutes = require('./routes/smsRoutes');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -15,19 +15,11 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174','https://otpfrontend-sigma.vercel.app'];
+// Apply CORS middleware FIRST
+app.use(corsMiddleware);
+app.use(manualCorsHeaders);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) callback(null, true);
-    else callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
-}));
-
+// Other middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -37,9 +29,22 @@ app.use('/api/sms', smsRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/auth', authRoutes);
 
-// Health check
+// Health check (add CORS headers explicitly)
 app.get('/health', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
   res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
+
+// Test CORS endpoint
+app.get('/test-cors', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.json({ 
+    message: 'CORS is working!',
+    origin: req.headers.origin,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // 404 handler
@@ -52,9 +57,10 @@ app.use(errorHandler);
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`\n🚀 Server running on port ${PORT}`);
       console.log(`✅ Health check: http://localhost:${PORT}/health`);
+      console.log(`✅ CORS Test: http://localhost:${PORT}/test-cors`);
       console.log(`\n📝 Available Routes:`);
       console.log(`   POST   /api/sms/send-otp`);
       console.log(`   POST   /api/sms/verify-otp`);
@@ -67,7 +73,10 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error('Failed to start server:', error);
-    process.exit(1);
+    // Don't exit, just log
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`⚠️ Server running without DB on port ${PORT}`);
+    });
   }
 };
 
